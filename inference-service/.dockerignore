@@ -1,0 +1,38 @@
+# ─── Python artefacts ────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+*.egg
+
+# ─── Virtual environments ────────────────────────────────────────────────────
+.venv/
+venv/
+ENV/
+env/
+
+# ─── Test / lint artefacts ───────────────────────────────────────────────────
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ─── Version control ─────────────────────────────────────────────────────────
+.git/
+.gitignore
+
+# ─── IDE / Editor ────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+
+# ─── Local config / secrets ──────────────────────────────────────────────────
+.env
+# Keep .env.example — it is documentation, not secrets
+!.env.example
+
+# ─── OS artefacts ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

@@ -1,0 +1,173 @@
+version: "3.9"
+
+networks:
+  insightpulse-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  kafka-data:
+
+services:
+  # ─── Zookeeper ───────────────────────────────────────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: insightpulse-zookeeper
+    networks:
+      - insightpulse-net
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo ruok | nc localhost 2181 | grep imok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Kafka ───────────────────────────────────────────────────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: insightpulse-kafka
+    networks:
+      - insightpulse-net
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_CREATE_TOPICS: "market-events:3:1"
+      KAFKA_LOG_RETENTION_HOURS: 168
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # ─── Kafka UI ────────────────────────────────────────────────────────────────
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: insightpulse-kafka-ui
+    networks:
+      - insightpulse-net
+    ports:
+      - "8090:8080"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: insightpulse-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+      DYNAMIC_CONFIG_ENABLED: "true"
+
+  # ─── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: insightpulse-postgres
+    networks:
+      - insightpulse-net
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: insightpulse
+      POSTGRES_USER: insightpulse
+      POSTGRES_PASSWORD: insightpulse_dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U insightpulse -d insightpulse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Ingestion Service (Java/Spring Boot) ────────────────────────────────────
+  ingestion-service:
+    build:
+      context: ./ingestion-service
+      dockerfile: Dockerfile
+    container_name: insightpulse-ingestion
+    networks:
+      - insightpulse-net
+    ports:
+      - "8080:8080"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      # Kafka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC_MARKET_EVENTS: market-events
+      # gRPC (calls inference-service)
+      GRPC_INFERENCE_HOST: inference-service
+      GRPC_INFERENCE_PORT: 50051
+      # PostgreSQL
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/insightpulse
+      SPRING_DATASOURCE_USERNAME: insightpulse
+      SPRING_DATASOURCE_PASSWORD: insightpulse_dev
+      # Spring
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8080
+    restart: on-failure
+
+  # ─── Inference Service (Python/FastAPI + gRPC) ───────────────────────────────
+  inference-service:
+    build:
+      context: ./inference-service
+      dockerfile: Dockerfile
+    container_name: insightpulse-inference
+    networks:
+      - insightpulse-net
+    ports:
+      - "8000:8000"   # HTTP / REST
+      - "50051:50051" # gRPC
+    environment:
+      # Kafka (consumer)
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC_MARKET_EVENTS: market-events
+      KAFKA_CONSUMER_GROUP: inference-group
+      # Server
+      HTTP_PORT: 8000
+      GRPC_PORT: 50051
+      # Model / inference settings
+      MODEL_PATH: /app/models
+      LOG_LEVEL: INFO
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+
+  # ─── Dashboard Frontend (Next.js) ────────────────────────────────────────────
+  dashboard-frontend:
+    build:
+      context: ./dashboard-frontend
+      dockerfile: Dockerfile
+    container_name: insightpulse-dashboard
+    networks:
+      - insightpulse-net
+    ports:
+      - "3000:3000"
+    depends_on:
+      - ingestion-service
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+      NEXT_PUBLIC_WS_URL: ws://localhost:8080
+      NODE_ENV: production
+    restart: on-failure

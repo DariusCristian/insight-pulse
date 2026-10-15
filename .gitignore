@@ -1,0 +1,117 @@
+# ─── Java / Gradle ───────────────────────────────────────────────────────────
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.war
+*.ear
+*.nar
+
+out/
+target/
+
+# Spring Boot
+spring-shell.log
+
+# ─── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+.venv/
+venv/
+ENV/
+env/
+
+dist/
+*.egg-info/
+*.egg
+MANIFEST
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Python .env — actual secrets; .env.example is kept
+.env
+!.env.example
+
+# ─── Node.js / Next.js ───────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+.next/
+out/
+.nuxt/
+.cache/
+
+*.tsbuildinfo
+next-env.d.ts
+
+# Local env — actual secrets; .env.local.example is kept
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.local.example
+
+# ─── Docker ──────────────────────────────────────────────────────────────────
+# Each service has its own .dockerignore — see:
+#   ingestion-service/.dockerignore
+#   inference-service/.dockerignore
+#   dashboard-frontend/.dockerignore
+
+# ─── Operating System ────────────────────────────────────────────────────────
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverrideDirectory
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# ─── IDE / Editor ────────────────────────────────────────────────────────────
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code (keep shared extensions/tasks, ignore personal settings)
+.vscode/settings.json
+.vscode/launch.json
+.vscode/*.code-workspace
+
+# Eclipse
+.classpath
+.project
+.settings/
+*.launch
+
+# ─── Secrets & Credentials ───────────────────────────────────────────────────
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials/

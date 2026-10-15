@@ -1,0 +1,25 @@
+# ─── Build artefacts ─────────────────────────────────────────────────────────
+.gradle/
+build/
+
+# ─── Version control ─────────────────────────────────────────────────────────
+.git/
+.gitignore
+
+# ─── IDE / Editor ────────────────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+
+# ─── Local config / secrets ──────────────────────────────────────────────────
+.env
+# Keep .env.example — it is documentation, not secrets
+!.env.example
+
+# ─── OS artefacts ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Test reports ────────────────────────────────────────────────────────────
+build/reports/
+build/test-results/

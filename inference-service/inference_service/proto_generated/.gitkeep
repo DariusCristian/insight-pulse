@@ -1,0 +1,5 @@
+# This directory is intentionally empty and tracked by git.
+# Run scripts/generate_proto.sh to populate it with the generated Python stubs:
+#   sentiment_pb2.py          — message classes
+#   sentiment_pb2_grpc.py     — servicer / stub classes
+#   __init__.py               — makes this directory a Python package

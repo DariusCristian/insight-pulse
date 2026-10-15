@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package sentiment;
+
+option java_package = "com.insightpulse.proto";
+option java_outer_classname = "SentimentProto";
+option java_multiple_files = true;
+
+// Request payload sent from the ingestion-service to the inference-service.
+message SentimentRequest {
+  // Unique identifier correlating back to the originating MarketEvent.
+  string event_id = 1;
+
+  // Ticker symbol (e.g. "AAPL", "BTC-USD").
+  string asset_symbol = 2;
+
+  // Raw text to run sentiment analysis on.
+  string raw_text = 3;
+
+  // Unix epoch milliseconds when the original event was produced.
+  int64 timestamp_ms = 4;
+}
+
+// Response payload returned by the inference-service.
+message SentimentResponse {
+  // Correlates to the request event_id.
+  string event_id = 1;
+
+  // Sentiment score in the range [-1.0, 1.0].
+  double score = 2;
+
+  // Human-readable label (e.g. "POSITIVE", "NEGATIVE", "NEUTRAL").
+  string label = 3;
+
+  // Unix epoch milliseconds when inference completed.
+  int64 processed_at_ms = 4;
+}
+
+// Unary RPC service exposed by the inference-service on port 50051.
+service SentimentService {
+  rpc Analyze(SentimentRequest) returns (SentimentResponse);
+}

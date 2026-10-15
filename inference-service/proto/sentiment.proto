@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package sentiment;
+
+// ---------------------------------------------------------------------------
+// Messages
+// ---------------------------------------------------------------------------
+
+// Request payload for a single sentiment inference.
+message SentimentRequest {
+  // The raw text to analyse. Must be non-empty.
+  string text = 1;
+}
+
+// Response payload containing the normalised sentiment score and raw label.
+message SentimentResponse {
+  // Normalised score in the range [-1.0, 1.0].
+  // -1.0 = strongly negative, 0.0 = neutral, 1.0 = strongly positive.
+  float score = 1;
+
+  // Human-readable label returned by the model, e.g. "POSITIVE" or "NEGATIVE".
+  string label = 2;
+}
+
+// ---------------------------------------------------------------------------
+// Service
+// ---------------------------------------------------------------------------
+
+// SentimentService exposes a single unary RPC for text sentiment analysis.
+service SentimentService {
+  // Analyze accepts a SentimentRequest and returns a SentimentResponse.
+  rpc Analyze (SentimentRequest) returns (SentimentResponse);
+}
