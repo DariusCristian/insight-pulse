@@ -2,32 +2,51 @@ syntax = "proto3";
 
 package sentiment;
 
-// ---------------------------------------------------------------------------
+option java_package         = "com.insightpulse.proto";
+option java_multiple_files  = true;
+option java_outer_classname = "SentimentProto";
+
+// ─────────────────────────────────────────────
 // Messages
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────
 
-// Request payload for a single sentiment inference.
 message SentimentRequest {
-  // The raw text to analyse. Must be non-empty.
-  string text = 1;
+  // Raw text to analyze (headline, tweet body, etc.)
+  string text         = 1;
+
+  // UUID of the originating MarketEvent
+  string event_id     = 2;
+
+  // Asset ticker the text relates to, e.g. "AAPL"
+  string asset_symbol = 3;
 }
 
-// Response payload containing the normalised sentiment score and raw label.
 message SentimentResponse {
-  // Normalised score in the range [-1.0, 1.0].
-  // -1.0 = strongly negative, 0.0 = neutral, 1.0 = strongly positive.
-  float score = 1;
+  // UUID echoed from the request for correlation
+  string event_id        = 1;
 
-  // Human-readable label returned by the model, e.g. "POSITIVE" or "NEGATIVE".
-  string label = 2;
+  // Normalized sentiment score in range [-1.0, 1.0]
+  // positive → bullish, negative → bearish
+  float  score           = 2;
+
+  // Human-readable label: "positive" | "negative" | "neutral"
+  string label           = 3;
+
+  // Unix epoch milliseconds when the model finished inference
+  int64  processed_at_ms = 4;
 }
 
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────
 // Service
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────
 
-// SentimentService exposes a single unary RPC for text sentiment analysis.
 service SentimentService {
-  // Analyze accepts a SentimentRequest and returns a SentimentResponse.
+  // Analyze performs sentiment inference on a single text payload.
+  //
+  // Called by: ingestion-service (Java, blocking stub in Virtual Thread)
+  // Served by: inference-service (Python, grpc.aio)
+  //
+  // Clients SHOULD set a deadline of 5 000 ms.
+  // On deadline exceeded, ingestion-service publishes to DLQ.
   rpc Analyze (SentimentRequest) returns (SentimentResponse);
 }
