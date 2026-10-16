@@ -15,6 +15,7 @@ import logging
 from typing import TYPE_CHECKING
 
 import grpc
+import grpc.aio
 
 if TYPE_CHECKING:
     # Only imported for type-checking; not available until proto stubs are generated.
@@ -66,38 +67,64 @@ class SentimentServicer:
     # RPC handlers
     # ------------------------------------------------------------------
 
-    def Analyze(
+    async def Analyze(
         self,
         request: "sentiment_pb2.SentimentRequest",
-        context: grpc.ServicerContext,
+        context: grpc.aio.ServicerContext,
     ) -> "sentiment_pb2.SentimentResponse":
         """Handle a unary SentimentRequest → SentimentResponse call.
 
         Parameters
         ----------
         request:
-            Protobuf ``SentimentRequest`` containing the ``text`` field.
+            Protobuf ``SentimentRequest`` containing the ``text``, ``event_id``,
+            and ``asset_symbol`` fields.
         context:
-            gRPC servicer context — used to set status codes on error.
+            gRPC async servicer context — used to set status codes on error.
 
         Returns
         -------
         SentimentResponse
-            Protobuf response with ``score`` (float32, [-1.0, 1.0]) and
-            ``label`` (str, e.g. "POSITIVE" / "NEGATIVE").
+            Protobuf response with:
+            - ``event_id`` (str): echoed from request
+            - ``score`` (float32, [-1.0, 1.0]): sentiment score
+            - ``label`` (str): "positive", "negative", or "neutral"
+            - ``processed_at_ms`` (int64): Unix epoch milliseconds
         """
+        import time  # noqa: PLC0415
+
         from inference_service.proto_generated import sentiment_pb2 as _pb2  # noqa: PLC0415
 
         try:
-            score: float = self._model.predict(request.text)
-            label: str = "POSITIVE" if score >= 0.0 else "NEGATIVE"
-            return _pb2.SentimentResponse(score=score, label=label)
+            # Run inference (model.predict is synchronous)
+            raw_score: float = self._model.predict(request.text)
+
+            # Clamp score strictly to [-1.0, 1.0]
+            score: float = max(-1.0, min(1.0, raw_score))
+
+            # Map to primary label based on score thresholds
+            if score > 0.05:
+                label = "positive"
+            elif score < -0.05:
+                label = "negative"
+            else:
+                label = "neutral"
+
+            # Get current time in milliseconds
+            processed_at_ms: int = int(time.time() * 1000)
+
+            return _pb2.SentimentResponse(
+                event_id=request.event_id,
+                score=score,
+                label=label,
+                processed_at_ms=processed_at_ms,
+            )
         except ValueError as exc:
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
             context.set_details(str(exc))
-            return _pb2.SentimentResponse()
+            return _pb2.SentimentResponse(event_id=request.event_id)
         except Exception as exc:  # noqa: BLE001
             logger.exception("Unexpected error during Analyze RPC: %s", exc)
             context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details("Internal inference error.")
-            return _pb2.SentimentResponse()
+            return _pb2.SentimentResponse(event_id=request.event_id)
