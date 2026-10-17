@@ -47,6 +47,9 @@ dependencies {
 
     // Protobuf
     implementation("com.google.protobuf:protobuf-java:${protobufVersion}")
+    
+    // Required for @Generated annotation in generated gRPC code
+    implementation("javax.annotation:javax.annotation-api:1.3.2")
 
     // Database
     runtimeOnly("org.postgresql:postgresql")
