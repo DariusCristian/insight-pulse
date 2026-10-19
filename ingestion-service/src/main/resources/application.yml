@@ -38,6 +38,10 @@ grpc:
       negotiation-type: plaintext
 
 app:
+  anomaly:
+    threshold: 2.5      # flag when |z| >= threshold
+    window-size: 100    # rolling scores kept per asset symbol
+    min-samples: 10     # no flagging until a symbol's window holds this many scores
   kafka:
     topics:
       market-events: market-events
