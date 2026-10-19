@@ -9,6 +9,7 @@ class SentimentServiceStub(object):
     """─────────────────────────────────────────────
     Service
     ─────────────────────────────────────────────
+
     """
 
     def __init__(self, channel):
@@ -28,6 +29,7 @@ class SentimentServiceServicer(object):
     """─────────────────────────────────────────────
     Service
     ─────────────────────────────────────────────
+
     """
 
     def Analyze(self, request, context):
@@ -62,6 +64,7 @@ class SentimentService(object):
     """─────────────────────────────────────────────
     Service
     ─────────────────────────────────────────────
+
     """
 
     @staticmethod

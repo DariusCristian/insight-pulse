@@ -54,6 +54,9 @@ dependencies {
     // Database
     runtimeOnly("org.postgresql:postgresql")
 
+    // Schema migrations (version managed by the Spring Boot BOM)
+    implementation("org.flywaydb:flyway-core")
+
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

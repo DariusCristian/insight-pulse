@@ -7,6 +7,8 @@ networks:
 volumes:
   postgres-data:
   kafka-data:
+  zookeeper-data:
+  zookeeper-log:
 
 services:
   # ─── Zookeeper ───────────────────────────────────────────────────────────────
@@ -17,6 +19,10 @@ services:
       - insightpulse-net
     ports:
       - "2181:2181"
+    # Persist ZK state so its cluster ID stays consistent with kafka-data across restarts.
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-log:/var/lib/zookeeper/log
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000

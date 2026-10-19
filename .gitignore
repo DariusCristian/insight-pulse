@@ -116,3 +116,6 @@ Desktop.ini
 *.pfx
 secrets/
 credentials/
+
+# ─── Personal Tracking Files ─────────────────────────────────────────────────
+TASKS_PROGRESS.md
