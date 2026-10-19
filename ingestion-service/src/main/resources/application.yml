@@ -8,8 +8,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/insightpulse
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    username: ${DB_USERNAME:insightpulse}
+    password: ${DB_PASSWORD:insightpulse_dev}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -34,7 +34,7 @@ spring:
 grpc:
   client:
     inference-service:
-      address: static://inference-service:50051
+      address: static://${GRPC_INFERENCE_HOST:localhost}:${GRPC_INFERENCE_PORT:50051}
       negotiation-type: plaintext
 
 app:
