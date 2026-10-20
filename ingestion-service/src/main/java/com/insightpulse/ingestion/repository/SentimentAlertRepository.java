@@ -16,4 +16,7 @@ public interface SentimentAlertRepository extends JpaRepository<SentimentAlertEn
     // - findAll()
     // - delete(entity)
     // and many more...
+
+    /** True if an alert was already stored for this event (used to skip Kafka re-deliveries). */
+    boolean existsByEventId(String eventId);
 }
