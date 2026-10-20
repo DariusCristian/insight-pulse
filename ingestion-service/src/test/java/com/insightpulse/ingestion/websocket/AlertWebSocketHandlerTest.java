@@ -120,12 +120,17 @@ class AlertWebSocketHandlerTest {
 
     @Test
     void concurrentConnectDisconnectAndBroadcastIsSafe() throws Exception {
+        // Kept small on purpose: every broadcast reaches every open mock session and Mockito
+        // records each call, so memory grows ~quadratically with the session count
+        // (16 x 200 sessions exhausted the test heap).
+        int threads = 8;
+        int perThread = 50;
         try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
             List<Future<?>> futures = new ArrayList<>();
-            for (int t = 0; t < 16; t++) {
+            for (int t = 0; t < threads; t++) {
                 int id = t;
                 futures.add(executor.submit(() -> {
-                    for (int i = 0; i < 200; i++) {
+                    for (int i = 0; i < perThread; i++) {
                         WebSocketSession s = openSession("s-" + id + "-" + i);
                         handler.afterConnectionEstablished(s);
                         handler.broadcast("msg-" + i);
@@ -140,7 +145,7 @@ class AlertWebSocketHandlerTest {
                 f.get(); // propagates any exception from inside a task
             }
         }
-        // Every odd-numbered session (10 per thread) was left connected.
-        assertThat(handler.activeSessionCount()).isEqualTo(16 * 100);
+        // Every odd-numbered session (half per thread) was left connected.
+        assertThat(handler.activeSessionCount()).isEqualTo(threads * perThread / 2);
     }
 }
