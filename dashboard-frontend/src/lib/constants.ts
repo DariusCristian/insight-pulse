@@ -12,8 +12,8 @@ export const WS_ENDPOINT: string =
 export const API_BASE_URL: string =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
 
-/** Maximum number of sentiment alerts kept in the in-memory feed. */
-export const MAX_ALERT_BUFFER = 200 as const;
+/** Maximum number of alerts kept in each in-memory feed. */
+export const MAX_ALERT_BUFFER = 50 as const;
 
 /** Reconnect back-off base delay in milliseconds. */
 export const WS_RECONNECT_DELAY_MS = 2_000 as const;

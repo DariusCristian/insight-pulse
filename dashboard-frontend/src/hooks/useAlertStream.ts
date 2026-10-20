@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { WebSocketClient } from '@/lib/websocket';
+import { useEffect, useState } from 'react';
 import type { ConnectionStatus } from '@/lib/websocket';
-import { WS_ENDPOINT, MAX_ALERT_BUFFER } from '@/lib/constants';
-import type { SentimentAlert, WebSocketMessage } from '@/types/market';
+import { MAX_ALERT_BUFFER } from '@/lib/constants';
+import { useStream } from '@/components/providers/StreamProvider';
+import type { SentimentAlert } from '@/types/market';
 
 export interface AlertStreamState {
   alerts: SentimentAlert[];
@@ -13,47 +13,21 @@ export interface AlertStreamState {
 }
 
 /**
- * Connects to the ingestion-service WebSocket stream and accumulates
- * incoming SENTIMENT messages.  The connection is established on mount
- * and torn down on unmount.  Reconnection is handled by WebSocketClient.
+ * Accumulates SENTIMENT messages from the shared stream (see StreamProvider),
+ * newest first, capped at MAX_ALERT_BUFFER items.
  */
 export function useAlertStream(): AlertStreamState {
-  const clientRef = useRef<WebSocketClient | null>(null);
-
+  const { client, connectionStatus } = useStream();
   const [alerts, setAlerts] = useState<SentimentAlert[]>([]);
-  const [connectionStatus, setConnectionStatus] =
-    useState<ConnectionStatus>('disconnected');
-  const [latestAlert, setLatestAlert] = useState<SentimentAlert | null>(null);
-
-  const handleMessage = useCallback((message: WebSocketMessage): void => {
-    if (message.type !== 'SENTIMENT') return;
-
-    const alert = message.payload;
-
-    setLatestAlert(alert);
-    setAlerts((prev) => {
-      const next = [alert, ...prev];
-      // Trim the buffer so we don't accumulate unbounded memory.
-      return next.length > MAX_ALERT_BUFFER ? next.slice(0, MAX_ALERT_BUFFER) : next;
-    });
-  }, []);
 
   useEffect(() => {
-    const client = new WebSocketClient(WS_ENDPOINT);
-    clientRef.current = client;
+    if (!client) return;
+    return client.onMessage((message) => {
+      if (message.type !== 'SENTIMENT') return;
+      const alert = message.payload;
+      setAlerts((prev) => [alert, ...prev].slice(0, MAX_ALERT_BUFFER));
+    });
+  }, [client]);
 
-    const unsubMessage = client.onMessage(handleMessage);
-    const unsubStatus = client.onStatus(setConnectionStatus);
-
-    client.connect();
-
-    return () => {
-      unsubMessage();
-      unsubStatus();
-      client.disconnect();
-      clientRef.current = null;
-    };
-  }, [handleMessage]);
-
-  return { alerts, connectionStatus, latestAlert };
+  return { alerts, connectionStatus, latestAlert: alerts[0] ?? null };
 }

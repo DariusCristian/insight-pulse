@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { WebSocketClient } from '@/lib/websocket';
+import { useEffect, useState } from 'react';
 import type { ConnectionStatus } from '@/lib/websocket';
-import { WS_ENDPOINT, MAX_ALERT_BUFFER } from '@/lib/constants';
-import type { AnomalyAlert, WebSocketMessage } from '@/types/market';
+import { MAX_ALERT_BUFFER } from '@/lib/constants';
+import { useStream } from '@/components/providers/StreamProvider';
+import type { AnomalyAlert } from '@/types/market';
 
 export interface AnomalyAlertsState {
   anomalies: AnomalyAlert[];
@@ -13,50 +13,21 @@ export interface AnomalyAlertsState {
 }
 
 /**
- * Connects to the ingestion-service WebSocket stream and accumulates
- * incoming ANOMALY messages.
- *
- * Note: if both useAlertStream and useAnomalyAlerts are mounted simultaneously
- * they will each open their own WebSocket connection.  For production use,
- * consider lifting the WebSocketClient into a React context so a single
- * connection is shared across hooks.
+ * Accumulates ANOMALY messages from the shared stream (see StreamProvider),
+ * newest first, capped at MAX_ALERT_BUFFER items.
  */
 export function useAnomalyAlerts(): AnomalyAlertsState {
-  const clientRef = useRef<WebSocketClient | null>(null);
-
+  const { client, connectionStatus } = useStream();
   const [anomalies, setAnomalies] = useState<AnomalyAlert[]>([]);
-  const [connectionStatus, setConnectionStatus] =
-    useState<ConnectionStatus>('disconnected');
-  const [latestAnomaly, setLatestAnomaly] = useState<AnomalyAlert | null>(null);
-
-  const handleMessage = useCallback((message: WebSocketMessage): void => {
-    if (message.type !== 'ANOMALY') return;
-
-    const alert = message.payload;
-
-    setLatestAnomaly(alert);
-    setAnomalies((prev) => {
-      const next = [alert, ...prev];
-      return next.length > MAX_ALERT_BUFFER ? next.slice(0, MAX_ALERT_BUFFER) : next;
-    });
-  }, []);
 
   useEffect(() => {
-    const client = new WebSocketClient(WS_ENDPOINT);
-    clientRef.current = client;
+    if (!client) return;
+    return client.onMessage((message) => {
+      if (message.type !== 'ANOMALY') return;
+      const alert = message.payload;
+      setAnomalies((prev) => [alert, ...prev].slice(0, MAX_ALERT_BUFFER));
+    });
+  }, [client]);
 
-    const unsubMessage = client.onMessage(handleMessage);
-    const unsubStatus = client.onStatus(setConnectionStatus);
-
-    client.connect();
-
-    return () => {
-      unsubMessage();
-      unsubStatus();
-      client.disconnect();
-      clientRef.current = null;
-    };
-  }, [handleMessage]);
-
-  return { anomalies, connectionStatus, latestAnomaly };
+  return { anomalies, connectionStatus, latestAnomaly: anomalies[0] ?? null };
 }

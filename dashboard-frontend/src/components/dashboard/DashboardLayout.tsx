@@ -1,5 +1,6 @@
 'use client';
 
+import { StreamProvider } from '@/components/providers/StreamProvider';
 import { useAlertStream } from '@/hooks/useAlertStream';
 import { useAnomalyAlerts } from '@/hooks/useAnomalyAlerts';
 import { SentimentChart } from './SentimentChart';
@@ -8,13 +9,24 @@ import { AnomalyPanel } from './AnomalyPanel';
 import { ConnectionStatusBadge } from './ConnectionStatusBadge';
 
 /**
- * Top-level dashboard shell.
- * Owns the WebSocket hook instances so child components receive data as props —
- * keeping data-fetching concerns out of the leaf components.
+ * Top-level dashboard shell. Opens one shared WebSocket connection
+ * (StreamProvider) for all live data on the page.
  */
 export function DashboardLayout() {
-  const { alerts, connectionStatus, latestAlert: _latestAlert } = useAlertStream();
-  const { anomalies, connectionStatus: anomalyStatus } = useAnomalyAlerts();
+  return (
+    <StreamProvider>
+      <DashboardContent />
+    </StreamProvider>
+  );
+}
+
+/**
+ * Owns the stream hooks so child components receive data as props —
+ * keeping data-fetching concerns out of the leaf components.
+ */
+function DashboardContent() {
+  const { alerts, connectionStatus } = useAlertStream();
+  const { anomalies } = useAnomalyAlerts();
 
   return (
     <div className="flex h-screen overflow-hidden bg-primary-950">
@@ -42,8 +54,7 @@ export function DashboardLayout() {
         </nav>
 
         <div className="mt-auto flex flex-col gap-2">
-          <ConnectionStatusBadge status={connectionStatus} label="Sentiment stream" />
-          <ConnectionStatusBadge status={anomalyStatus} label="Anomaly stream" />
+          <ConnectionStatusBadge status={connectionStatus} label="Live stream" />
         </div>
       </aside>
 
