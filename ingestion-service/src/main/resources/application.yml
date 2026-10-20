@@ -45,3 +45,6 @@ app:
   kafka:
     topics:
       market-events: market-events
+      market-events-dlq: ${KAFKA_TOPIC_DLQ:market-events-dlq}
+    retry-interval-ms: 1000   # back-off between retries of a failed record
+    retry-attempts: 2         # retries before the record goes to the DLQ
