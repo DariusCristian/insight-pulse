@@ -1,17 +1,24 @@
 package com.insightpulse.ingestion.service;
 
+import com.insightpulse.ingestion.model.AnomalyAlert;
 import com.insightpulse.ingestion.model.SentimentAlert;
 
 /**
- * Orchestrates the dispatch of a {@link SentimentAlert} to all downstream consumers
- * (WebSocket broadcast, persistence, metrics, etc.).
+ * Pushes processed alerts to downstream consumers (currently the dashboard WebSocket).
  */
 public interface AlertDispatchService {
 
     /**
-     * Dispatches the given alert to all registered sinks.
+     * Dispatches a sentiment alert.
      *
      * @param alert the alert to dispatch
      */
     void dispatch(SentimentAlert alert);
+
+    /**
+     * Dispatches an anomaly alert.
+     *
+     * @param alert the alert to dispatch
+     */
+    void dispatchAnomaly(AnomalyAlert alert);
 }
