@@ -18,19 +18,23 @@ export interface MarketEvent {
 export interface SentimentAlert {
   eventId: string;
   assetSymbol: string;
-  /** Sentiment confidence score in the range [0, 1]. */
+  /** Sentiment score in the range [-1, 1]; negative = bearish, positive = bullish. */
   score: number;
   label: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL';
   processedAtMs: number;
 }
 
-/** Anomaly detection alert emitted by the inference service. */
+/** Anomaly alert emitted by ingestion-service when a sentiment score spikes. */
 export interface AnomalyAlert {
   alertId: string;
   assetSymbol: string;
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   triggeredAtMs: number;
   description: string;
+  direction?: 'BULLISH_SPIKE' | 'BEARISH_SPIKE';
+  zScore?: number;
+  triggeringScore?: number;
+  triggeringEventId?: string;
 }
 
 // ---------------------------------------------------------------------------

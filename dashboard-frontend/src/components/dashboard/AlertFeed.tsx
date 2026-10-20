@@ -2,6 +2,7 @@
 
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { scoreColor } from './SentimentChart';
 import type { SentimentAlert } from '@/types/market';
 
 interface AlertFeedProps {
@@ -42,8 +43,12 @@ export function AlertFeed({ alerts }: AlertFeedProps) {
             </div>
 
             <div className="flex items-center gap-3 shrink-0">
-              <span className="text-xs text-primary-400">
-                {(alert.score * 100).toFixed(1)}%
+              <span
+                className="font-mono text-xs"
+                style={{ color: scoreColor(alert.score) }}
+              >
+                {alert.score >= 0 ? '+' : ''}
+                {alert.score.toFixed(2)}
               </span>
               <Badge variant={labelVariant[alert.label]}>
                 {alert.label}
