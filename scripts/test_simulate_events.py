@@ -43,6 +43,11 @@ class EventGeneratorTest(unittest.TestCase):
         ids = lambda: {json.loads(v)["eventId"] for _, v, _ in self.gen().lines(50)}
         self.assertFalse(ids() & ids())
 
+    def test_regime_is_stable_across_runs_and_seeds(self):
+        regimes = lambda seed: [a.bullish for a in self.gen(symbols=sim.DEFAULT_SYMBOLS, seed=seed).assets]
+        self.assertEqual(regimes(1), regimes(999))
+        self.assertEqual(regimes(None), regimes(None))
+
     def test_shock_headlines_go_against_the_regime(self):
         gen = self.gen(symbols=["AAPL"], shock_prob=1.0, trade_prob=0.0)
         expected = sim.NEGATIVE if gen.assets[0].bullish else sim.POSITIVE

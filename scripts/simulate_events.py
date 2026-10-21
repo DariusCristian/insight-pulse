@@ -28,6 +28,7 @@ import subprocess
 import sys
 import time
 import uuid
+import zlib
 from dataclasses import dataclass
 from typing import Iterator, TextIO
 
@@ -74,6 +75,16 @@ class Asset:
     bullish: bool
 
 
+def stable_regime(symbol: str) -> bool:
+    """Bullish/bearish regime fixed per symbol (~70% bullish), identical across runs.
+
+    The anomaly detector keeps a rolling window per symbol across runs; if the
+    regime changed between runs the window would mix both polarities, its spread
+    would grow, and shocks would no longer stand out as anomalies.
+    """
+    return zlib.crc32(symbol.encode()) % 10 < 7
+
+
 class EventGenerator:
     """Deterministic (given a seed) generator of MarketEvent dicts."""
 
@@ -84,7 +95,7 @@ class EventGenerator:
         self.trade_prob = trade_prob
         self.malformed_every = malformed_every
         self.assets = [
-            Asset(s, NAMES.get(s, s), START_PRICES.get(s, 100.0), bullish=self.rng.random() < 0.7)
+            Asset(s, NAMES.get(s, s), START_PRICES.get(s, 100.0), bullish=stable_regime(s))
             for s in symbols
         ]
         self.produced = 0
