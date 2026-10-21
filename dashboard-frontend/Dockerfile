@@ -37,11 +37,17 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
+# Docker sets HOSTNAME to the container id; the standalone server binds to it,
+# which would make it unreachable on localhost (and break the healthcheck).
+ENV HOSTNAME=0.0.0.0
+
+# Run as a non-root user (the node image ships a `node` user).
+USER node
 
 # next/standalone copies only the files required to run the server
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
+COPY --from=builder --chown=node:node /app/public ./public
 
 EXPOSE 3000
 
