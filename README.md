@@ -149,6 +149,15 @@ npm run dev
    npm run lint
    ```
 
+6. **Simulate market events** (stack must be running; needs only Python 3 and Docker):
+   ```bash
+   python3 scripts/simulate_events.py                       # 100 events at 2/s
+   python3 scripts/simulate_events.py --count 0 --rate 5    # stream until Ctrl+C
+   python3 scripts/simulate_events.py --malformed-every 20  # also exercise the DLQ
+   python3 scripts/simulate_events.py --help                # all options
+   ```
+   Open http://localhost:3000 to watch the events arrive. Tests: `python3 -m unittest discover -s scripts`.
+
 ## Environment Variables
 
 Each service ships an `.env.example` that documents all required variables:
