@@ -1,0 +1,117 @@
+{
+  "_comment": "Demo headlines for scripts/demo.py. All events are FICTIONAL and written for the demo; they do not describe real news about these companies. Each phase maps symbol -> list of headlines and is interleaved round-robin across symbols. Verify with: python3 scripts/demo.py check",
+  "base_prices": {"AAPL": 192.40, "MSFT": 418.10, "NVDA": 124.80, "TSLA": 238.60},
+  "warmup": {
+    "AAPL": [
+      "Apple beats quarterly earnings expectations on strong iPhone demand",
+      "Apple services revenue hits a new record high",
+      "Analysts raise Apple price target after upbeat guidance",
+      "Apple shares slip as supplier reports slower orders",
+      "Apple expands buyback program, investors welcome the move",
+      "Apple wins praise for its new chip performance",
+      "Apple gains market share in wearables",
+      "Apple margins improve thanks to premium product mix",
+      "Apple stock rises after a successful product launch",
+      "Apple reports solid growth in emerging markets",
+      "Apple raises dividend for the twelfth straight year",
+      "Investors cheer Apple's strong cash flow",
+      "Apple holds steady ahead of its developer conference",
+      "Apple posts better-than-expected holiday sales"
+    ],
+    "MSFT": [
+      "Microsoft cloud revenue grows faster than expected",
+      "Microsoft beats estimates as AI services gain traction",
+      "Analysts upgrade Microsoft on strong enterprise demand",
+      "Microsoft shares dip slightly after a broad market selloff",
+      "Microsoft wins a valuable multi-year cloud contract",
+      "Microsoft gaming division delivers record quarter",
+      "Microsoft raises full-year outlook on robust sales",
+      "Microsoft Copilot adoption accelerates across businesses",
+      "Microsoft margins expand as cloud scales efficiently",
+      "Microsoft announces generous dividend increase",
+      "Microsoft delivers an upbeat and confident earnings call",
+      "Investors applaud Microsoft's disciplined spending",
+      "Microsoft shares look strong ahead of its earnings report",
+      "Microsoft security business posts excellent growth"
+    ],
+    "NVDA": [
+      "Nvidia reports excellent revenue growth on data center demand",
+      "Nvidia unveils a faster AI chip, analysts impressed",
+      "Nvidia shares hit a record as orders surge",
+      "Nvidia slips briefly on profit-taking after a strong run",
+      "Nvidia raises guidance well above Wall Street forecasts",
+      "Nvidia wins new partnerships with major cloud providers",
+      "Analysts call Nvidia the clear leader in AI hardware",
+      "Nvidia gross margins climb to an impressive level",
+      "Nvidia gaming revenue rebounds strongly",
+      "Nvidia announces a large share repurchase",
+      "Nvidia stock gains after an excellent quarter",
+      "Investors cheer Nvidia's booming AI business",
+      "Nvidia holds near its highs in quiet trading",
+      "Nvidia delivers outstanding growth across all segments"
+    ],
+    "TSLA": [
+      "Tesla deliveries beat expectations this quarter",
+      "Tesla energy storage business posts record growth",
+      "Analysts upgrade Tesla on improving margins",
+      "Tesla shares fall slightly on a cautious analyst note",
+      "Tesla opens a new factory ahead of schedule",
+      "Tesla software revenue grows strongly",
+      "Tesla raises production targets on solid demand",
+      "Tesla wins a large fleet order from a rental company",
+      "Tesla stock rallies after a strong earnings report",
+      "Tesla reports healthy cash flow and lower costs",
+      "Investors welcome Tesla's new affordable model",
+      "Tesla charging network expands rapidly",
+      "Tesla trades steady ahead of its delivery report",
+      "Tesla posts better-than-expected profit"
+    ]
+  },
+  "stream": {
+    "AAPL": [
+      "Apple announces new AI features for its devices",
+      "Apple supplier signals strong demand into next quarter",
+      "Apple shares edge higher in morning trading",
+      "Apple wins a major enterprise deal",
+      "Analysts praise Apple's growing services ecosystem"
+    ],
+    "MSFT": [
+      "Microsoft expands its data center footprint in Europe",
+      "Microsoft cloud wins another large government contract",
+      "Microsoft stock rises as AI demand stays strong",
+      "Microsoft reports excellent customer growth",
+      "Analysts are very positive about Microsoft shares"
+    ],
+    "NVDA": [
+      "Nvidia's new chips are a huge success with customers",
+      "Nvidia data center orders remain very strong",
+      "Nvidia benefits greatly from growing AI spending",
+      "Nvidia lands an exciting new deal with a major automaker",
+      "Analysts are excited about another great quarter for Nvidia"
+    ],
+    "TSLA": [
+      "Tesla expands its robotaxi pilot to new cities",
+      "Tesla battery technology impresses industry experts",
+      "Tesla stock gains on strong China sales",
+      "Tesla reports record energy deployments",
+      "Analysts raise Tesla delivery estimates"
+    ]
+  },
+  "shock": [
+    {"symbol": "NVDA", "text": "Nvidia shares collapse after regulators open a fraud investigation", "price_move": -0.09, "expect_anomaly": true}
+  ],
+  "after": {
+    "AAPL": [
+      "Apple shares rise as investors rotate into quality stocks",
+      "Apple remains strong despite chip sector turmoil"
+    ],
+    "MSFT": [
+      "Microsoft holds up well with solid cloud demand",
+      "Microsoft shares gain on steady enterprise spending"
+    ],
+    "TSLA": [
+      "Tesla stock rises on upbeat delivery outlook",
+      "Tesla wins new energy storage contracts"
+    ]
+  }
+}
