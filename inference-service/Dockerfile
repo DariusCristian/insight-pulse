@@ -57,15 +57,23 @@ COPY inference_service/ ./inference_service/
 EXPOSE 8000 50051
 
 # Default env (can be overridden at runtime or via docker-compose).
+# HF_HOME is where transformers caches the downloaded model; compose mounts a
+# volume there so the model is not re-downloaded on every container start.
 ENV HTTP_PORT=8000 \
     GRPC_PORT=50051 \
     MODEL_NAME=distilbert-base-uncased-finetuned-sst-2-english \
-    LOG_LEVEL=info
+    LOG_LEVEL=info \
+    HF_HOME=/hf-cache
+
+# Run as a non-root user. /hf-cache is created and owned here so a fresh named
+# volume mounted on it inherits the ownership.
+RUN groupadd -r appgroup && useradd -r -g appgroup -d /app appuser \
+    && mkdir -p /hf-cache \
+    && chown -R appuser:appgroup /hf-cache /app
+USER appuser
 
 # ---------------------------------------------------------------------------
 # Entrypoint
 # ---------------------------------------------------------------------------
-CMD ["uvicorn", "inference_service.main:app", \
-     "--host", "0.0.0.0", \
-     "--port", "8000", \
-     "--log-level", "info"]
+# Shell form so HTTP_PORT is honoured; `exec` keeps uvicorn as PID 1 for clean shutdown.
+CMD ["sh", "-c", "exec uvicorn inference_service.main:app --host 0.0.0.0 --port \"${HTTP_PORT}\" --log-level info"]
