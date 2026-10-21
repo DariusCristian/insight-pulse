@@ -158,6 +158,16 @@ npm run dev
    ```
    Open http://localhost:3000 to watch the events arrive. Tests: `python3 -m unittest discover -s scripts`.
 
+7. **Presentation demo** (curated, fictional headlines in `scripts/demo_headlines.json`):
+   ```bash
+   python3 scripts/demo.py check     # beforehand: scores every headline, predicts the anomalies
+   python3 scripts/demo.py prepare   # right before: resets demo rows, clears anomaly windows, warms up
+   # reload http://localhost:3000 for a clean screen
+   python3 scripts/demo.py run       # live: streams the story, press Enter for the market shock
+   ```
+   `check` must print `OK` — if you edit the headlines or change the model, run it again.
+   Run `prepare` again before each rehearsal; restarting ingestion-service clears the warm-up.
+
 ## Environment Variables
 
 Each service ships an `.env.example` that documents all required variables:
