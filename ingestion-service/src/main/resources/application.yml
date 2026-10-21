@@ -31,6 +31,16 @@ spring:
     listener:
       ack-mode: manual_immediate
 
+# Only the health endpoint is exposed (used by the docker-compose healthcheck).
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
 grpc:
   client:
     inference-service:
