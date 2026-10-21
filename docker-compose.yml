@@ -172,7 +172,7 @@ services:
       timeout: 5s
       retries: 12
       start_period: 30s
-    restart: on-failure
+    restart: unless-stopped
 
   # ─── Inference Service (Python/FastAPI + gRPC) ───────────────────────────────
   inference-service:
@@ -199,7 +199,7 @@ services:
       retries: 12
       # First start downloads the model.
       start_period: 120s
-    restart: on-failure
+    restart: unless-stopped
 
   # ─── Dashboard Frontend (Next.js) ────────────────────────────────────────────
   dashboard-frontend:
@@ -224,4 +224,4 @@ services:
       interval: 10s
       timeout: 5s
       retries: 6
-    restart: on-failure
+    restart: unless-stopped
