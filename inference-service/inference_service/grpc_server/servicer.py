@@ -96,6 +96,7 @@ class SentimentServicer:
         from inference_service.proto_generated import sentiment_pb2 as _pb2  # noqa: PLC0415
 
         try:
+            started = time.perf_counter()
             # Run inference (model.predict is synchronous)
             raw_score: float = self._model.predict(request.text)
 
@@ -112,6 +113,12 @@ class SentimentServicer:
 
             # Get current time in milliseconds
             processed_at_ms: int = int(time.time() * 1000)
+
+            logger.info(
+                "Analyze event_id=%s symbol=%s score=%.3f label=%s latency_ms=%.1f",
+                request.event_id, request.asset_symbol, score, label,
+                (time.perf_counter() - started) * 1000,
+            )
 
             return _pb2.SentimentResponse(
                 event_id=request.event_id,
